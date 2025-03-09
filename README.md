@@ -41,6 +41,6 @@ Despues, aplicamos los cambios sobre la base de datos (en este caso SQLite):
     
 - Correr el proyecto: `python manage.py runserver`
     
-El resto de la documentación se encuentra en la colección de Postmand del proyecto: [Delivery System API Documentation](undefined/workspace/delivery-system/collection/18777649-0c554696-53c6-4093-a526-7b979d4fab1e?action=share&creator=18777649)
+El resto de la documentación se encuentra en la colección de Postmand del proyecto: [Delivery System API Documentation](https://www.postman.com/gold-meadow-56857/workspace/delivery-system)
 
 Allí encontrarás los pasos para realizar el flujo principal de la plataforma: Crear una entrega
