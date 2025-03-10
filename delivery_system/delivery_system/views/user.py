@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from django.contrib.auth.models import User
+from django.db.models import Count
 from django.db.models import Q
 
 from delivery_system.helpers.auth import CustomTokenAuthentication
@@ -129,6 +130,36 @@ class UserApi(APIView):
 
         """
         user = request.user
+        Token.objects.filter(user=user).delete()
         user.delete()
 
         return Response(status=status.HTTP_200_OK)
+
+
+class UserDeliveryApi(APIView):
+    """ View for the user's delivery Api """
+    authentication_classes = [CustomTokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """ Returns the user's information
+
+        Parameters:
+            request: The request object
+
+        Returns:
+            Response: Response and status code.
+
+        """
+        users = User.objects.prefetch_related(
+            "deliveries"
+        ).annotate(
+            deliveries_count=Count("deliveries")
+        ).order_by("-deliveries_count").values(
+            "id", "username", "deliveries_count"
+        )
+
+        return Response({
+            "count": users.count(),
+            "data": paginate(users, request.headers)
+        }, status=status.HTTP_200_OK)

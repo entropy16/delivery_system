@@ -1,4 +1,6 @@
 """ Contains the CEDI Django model. """
+import pandas as pd
+
 from django.db.models import CharField
 from django.db.models import FloatField
 from django.db.models import Model
@@ -42,4 +44,28 @@ class CEDI(Model):
             dict: CEDI metrics
 
         """
-        return True
+        deliveries = pd.DataFrame(self.deliveries.values(
+            "distance", "estimated_duration"
+        ))
+
+        if deliveries.empty:
+            return {
+                "min_distance": None,
+                "max_distance": None,
+                "min_duration": None,
+                "max_duration": None,
+                "avg_speed": None,
+                "avg_min_per_km": None
+            }
+
+        avg_distance = deliveries["distance"].mean()
+        avg_estimated_duration = deliveries["estimated_duration"].mean()
+
+        return {
+            "min_distance": deliveries["distance"].min(),
+            "max_distance": deliveries["distance"].max(),
+            "min_duration": deliveries["estimated_duration"].min(),
+            "max_duration": deliveries["estimated_duration"].max(),
+            "avg_speed": avg_distance / (avg_estimated_duration / 60),
+            "avg_min_per_km": avg_estimated_duration / avg_distance
+        }

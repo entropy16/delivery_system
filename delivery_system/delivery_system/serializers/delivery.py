@@ -12,7 +12,7 @@ class DeliverySerializer(serializers.ModelSerializer):
     class Meta:
         model = Delivery
         fields = [
-            "id", "client", "cedi", "distance", "duration",
+            "id", "client", "cedi", "distance", "estimated_duration",
             "latitude", "longitude", "created"
         ]
         read_only_fields = ["created"]
@@ -23,4 +23,4 @@ class DeliverySerializer(serializers.ModelSerializer):
 
     def get_cedi(self, obj):
         """Returns the cedi name for the delivery."""
-        return obj.cedi.name
+        return obj.cedi.name if obj.cedi else None

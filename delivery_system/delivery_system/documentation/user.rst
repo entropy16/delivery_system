@@ -2,14 +2,14 @@
  User API Documentation
 ========================
 
-This document describes the API endpoints for user-related operations in the delivery system.
+Este documento describe los endpoints de la API para las operaciones relacionadas con los Usuarios en el sistema de entrega.
 
-Register User
--------------
+Registrar Usuario
+-----------------
 
 .. http:post:: /api/user/register
 
-   Register a new user account.
+    Crea un nuevo usuario en la plataforma
 
 **Request Body:**
 
@@ -49,12 +49,12 @@ Usuario registrado con éxito
     }
 
 
-Get Users
----------
+Obtener Usuarios
+----------------
 
 .. http:get:: /api/user
 
-   Retrieves all users information.
+    Obtiene la lista de usuarios registrados en la plataforma.
 
 **Request Body:**
 
@@ -95,12 +95,12 @@ Get Users
     ]
 
 
-Update User Profile
--------------------
+Actualizar Usuario
+------------------
 
 .. http:put:: /api/user
 
-   Update the authenticated user's profile information.
+    Actualiza la información del usuario autenticado.
 
 **Request Body:**
 
@@ -139,12 +139,12 @@ Update User Profile
     }
 
 
-Delete User Account
--------------------
+Borrar Usuario
+--------------
 
 .. http:delete:: /api/user
 
-   Delete the authenticated user's account.
+    Elimina la cuenta del usuario autenticado.
 
 **Request Body:**
 
@@ -160,3 +160,52 @@ Delete User Account
 
     HTTP/1.1 200 OK
     Content-Type: application/json
+
+
+Obtener Entregas por Usuario
+----------------------------
+
+.. http:get:: /api/user/delivery
+
+    Obtiene la información de entregas creadas por los usuarios.
+
+**Request Body:**
+
+.. sourcecode:: http
+
+    GET /api/user/delivery HTTP/1.1
+    Authorization: Bearer <token>
+    Content-Type: application/json
+
+**Response:**
+
+.. sourcecode:: http
+
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+
+    {
+        "count": 4,
+        "data": [
+            {
+                "id": 6,
+                "username": "user3",
+                "deliveries_count": 17
+            },
+            {
+                "id": 1,
+                "username": "admin",
+                "deliveries_count": 15
+            },
+            {
+                "id": 7,
+                "username": "user2",
+                "deliveries_count": 5
+            },
+            {
+                "id": 4,
+                "username": "user31",
+                "deliveries_count": 0
+            }
+        ]
+    }

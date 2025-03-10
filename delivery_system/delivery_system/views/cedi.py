@@ -11,10 +11,13 @@ from delivery_system.helpers.auth import CustomTokenAuthentication
 
 from delivery_system.models.cedi import CEDI
 
+from delivery_system.serializers.cedi import CEDIDeliveryTypeSerializer
+from delivery_system.serializers.cedi import CEDIMetricsSerializer
 from delivery_system.serializers.cedi import CEDISerializer
 
 INFORMATION = "information"
 METRICS = "metrics"
+BY_DELIVERY_TYPE = "by_delivery_type"
 
 CEDI_NOT_FOUND = {
     "code": "cedi_not_found",
@@ -38,7 +41,7 @@ class CEDIApi(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        """ Creates a new cedi in the platform
+        """ Creates a new CEDI in the platform
 
         Parameters:
             request: The request object
@@ -59,9 +62,7 @@ class CEDIApi(APIView):
                 "errors": validator.errors
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        if CEDI.objects.filter(
-            name=request.data["name"]
-        ).exists():
+        if CEDI.objects.filter(name=request.data["name"]).exists():
             return Response(
                 CEDI_NAME_ALREADY_EXISTS,
                 status=status.HTTP_400_BAD_REQUEST
@@ -87,7 +88,7 @@ class CEDIApi(APIView):
         }, status=status.HTTP_201_CREATED)
 
     def get(self, request):
-        """ Returns the cedi's information
+        """ Returns the CEDI's information
 
         Parameters:
             request: The request object
@@ -96,14 +97,34 @@ class CEDIApi(APIView):
             Response: Response and status code.
 
         """
+        validator = Validator({
+            "action": {
+                "required": True, "type": "string",
+                "allowed": [INFORMATION, METRICS, BY_DELIVERY_TYPE]
+            }
+        })
+        if not validator.validate(request.query_params):
+            return Response({
+                "code": "invalid_query",
+                "detailed": "Query con estructura inválida",
+                "errors": validator.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         cedi = CEDI.objects.all()
+
+        data = {}
+        if request.query_params["action"] == INFORMATION:
+            data = CEDISerializer(cedi, many=True).data
+
+        elif request.query_params["action"] == METRICS:
+            data = CEDIMetricsSerializer(cedi, many=True).data
+
+        elif request.query_params["action"] == BY_DELIVERY_TYPE:
+            data = CEDIDeliveryTypeSerializer(cedi, many=True).data
 
         return Response({
             "count": cedi.count(),
-            "data": paginate(
-                CEDISerializer(cedi, many=True).data,
-                request.headers
-            )
+            "data": paginate(data, request.headers)
         }, status=status.HTTP_200_OK)
 
 
@@ -113,7 +134,7 @@ class SpecificCEDIApi(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, cedi_id):
-        """ Returns the cedi's information
+        """ Returns the CEDI's informaion according to the action
 
         Parameters:
             request: The request object
@@ -124,35 +145,15 @@ class SpecificCEDIApi(APIView):
             Response: Response and status code.
 
         """
-        validator = Validator({
-            "action": {
-                "required": True, "type": "string",
-                "allowed": [INFORMATION, METRICS]
-            }
-        })
-        if not validator.validate(request.query_params):
-            return Response({
-                "code": "invalid_query",
-                "detailed": "Query con estructura inválida",
-                "errors": validator.errors
-            }, status=status.HTTP_400_BAD_REQUEST)
-
         cedi = CEDI.objects.filter(pk=cedi_id).first()
 
         if not cedi:
             return Response(CEDI_NOT_FOUND, status=status.HTTP_404_NOT_FOUND)
 
-        data = {}
-        if request.query_params["action"] == INFORMATION:
-            data = CEDISerializer(cedi).data
-
-        elif request.query_params["action"] == METRICS:
-            data = cedi.get_metrics()
-
-        return Response(data, status=status.HTTP_200_OK)
+        return Response(CEDISerializer(cedi).data, status=status.HTTP_200_OK)
 
     def put(self, request, cedi_id):
-        """ Updates the cedi's information
+        """ Updates the CEDI's information
 
         Parameters:
             request: The request object
@@ -201,7 +202,7 @@ class SpecificCEDIApi(APIView):
         return Response(status=status.HTTP_200_OK)
 
     def delete(self, request, cedi_id):
-        """ Deletes the cedi's information
+        """ Deletes the CEDI's information
 
         Parameters:
             request: The request object
