@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
-    """ User serializer class. """
+    """ User model serializer. """
     password = serializers.CharField(
         max_length=128, min_length=8, write_only=True,
         error_messages={

@@ -129,13 +129,13 @@ Update User Profile
 
     {
         "code": "invalid_body",
-        "detailed": "Invalid request body",
+        "detailed": "Cuerpo con estructura inválida",
         "error": {}
     }
 
     {
         "code": "user_already_exists",
-        "detailed": "User with the same username and/or email already exists"
+        "detailed": "Ya existe un usuario con ese username y/o email"
     }
 
 

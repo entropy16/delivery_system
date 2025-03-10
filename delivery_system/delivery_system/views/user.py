@@ -11,12 +11,18 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 
 from delivery_system.helpers.auth import CustomTokenAuthentication
+from delivery_system.helpers.paginator import paginate
 
 from delivery_system.serializers.user import UserSerializer
 
+USER_NOT_FOUND = {
+    "code": "user_not_found",
+    "detailed": "Usuario no encontrado"
+}
+
 
 class PublicUserApi(APIView):
-    """ View for the user's information """
+    """ View for the user's registration """
 
     def post(self, request):
         """ Creates a new user in the platform
@@ -25,8 +31,8 @@ class PublicUserApi(APIView):
             request: The request object
 
         Returns:
-            dict: The user's information
-        
+            Response: Response and status code.
+
         """
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -42,7 +48,7 @@ class PublicUserApi(APIView):
 
 
 class UserApi(APIView):
-    """ View for the user's information """
+    """ View for the user's management """
     authentication_classes = [CustomTokenAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -53,13 +59,18 @@ class UserApi(APIView):
             request: The request object
 
         Returns:
-            dict: The user's information
-        
+            Response: Response and status code.
+
         """
         users = User.objects.all()
-        serializer = UserSerializer(users, many=True)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({
+            "count": users.count(),
+            "data": paginate(
+                UserSerializer(users, many=True).data,
+                request.headers
+            )
+        }, status=status.HTTP_200_OK)
 
     def put(self, request):
         """ Updates the user's information
@@ -68,7 +79,7 @@ class UserApi(APIView):
             request: The request object
 
         Returns:
-            dict: The user's information
+            Response: Response and status code.
 
         """
         validator = Validator({
@@ -85,7 +96,7 @@ class UserApi(APIView):
         if not validator.validate(request.data) or not request.data:
             return Response({
                 "code": "invalid_body",
-                "detailed": "Invalid request body",
+                "detailed": "Cuerpo con estructura inválida",
                 "error": validator.errors
             }, status=status.HTTP_400_BAD_REQUEST)
 
@@ -97,21 +108,13 @@ class UserApi(APIView):
         ).exclude(pk=user.pk).exists():
             return Response({
                 "code": "user_already_exists",
-                "detailed": (
-                    "User with the same username and/or email already exists"
-                )
+                "detailed": "Ya existe un usuario con ese username y/o email"
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        if "username" in request.data:
-            user.username = request.data["username"]
-
-        if "email" in request.data:
-            user.email = request.data["email"]
-
         if "password" in request.data:
-            user.set_password(request.data["password"])
+            user.set_password(request.data.pop("password"))
 
-        user.save()
+        User.filter(pk=user.pk).update(**request.data)
 
         return Response(status=status.HTTP_200_OK)
 
@@ -122,7 +125,7 @@ class UserApi(APIView):
             request: The request object
 
         Returns:
-            dict: The user's information
+            Response: Response and status code.
 
         """
         user = request.user

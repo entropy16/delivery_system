@@ -1,6 +1,8 @@
 """ Django settings for delivery_system project. """
 from pathlib import Path
 
+from .credentials.keys import GOOGLE_API_KEY
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -10,6 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-rzi%!bthyb3$xtb%zg3ptdn)67d+p-ekd^7d-g_+lj_efd1ki&'
+GOOGLE_API_KEY = GOOGLE_API_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -26,7 +29,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework'
+    'rest_framework',
+    'rest_framework.authtoken',
+    'delivery_system'
 ]
 
 MIDDLEWARE = [
@@ -101,6 +106,7 @@ USE_I18N = True
 
 USE_TZ = True
 
+DEFAULT_RANGE = "0-9"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/

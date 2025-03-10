@@ -8,6 +8,8 @@ from rest_framework import status
 
 from django.contrib.auth.models import User
 
+from delivery_system.views.user import USER_NOT_FOUND
+
 
 class AuthTokenApi(APIView):
     """ Custom authentication view that returns the user"s information """
@@ -20,7 +22,7 @@ class AuthTokenApi(APIView):
 
         Returns:
             dict: The user"s information
-        
+
         """
         validator = Validator({
             "username": {"required": True, "type": "string", "empty": False},
@@ -32,21 +34,20 @@ class AuthTokenApi(APIView):
                 "detailed": "Invalid body parameters",
                 "error": validator.errors
             }, status=status.HTTP_400_BAD_REQUEST)
-        
+
         user = User.objects.filter(username=request.data["username"]).first()
         if not user:
-            return Response({
-                "code": "user_not_found",
-                "detailed": "User not found"
-            }, status=status.HTTP_404_NOT_FOUND)
+            return Response(USER_NOT_FOUND, status=status.HTTP_404_NOT_FOUND)
 
         if not user.check_password(request.data["password"]):
             return Response({
                 "code": "invalid_password",
-                "detailed": "Invalid password"
+                "detailed": "Contraseña incorrecta"
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        token, _ = Token.objects.get_or_create(user=user)
+        Token.objects.filter(user=user).delete()
+
+        token = Token.objects.create(user=user)
 
         return Response({
             "token": token.key,

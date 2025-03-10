@@ -41,7 +41,7 @@ Login
 
     {
         "code": "invalid_password",
-        "detailed": "Invalid password"
+        "detailed": "Contraseña incorrecta"
     }
 
 .. sourcecode:: http
@@ -51,5 +51,5 @@ Login
 
     {
         "code": "user_not_found",
-        "detailed": "User not found"
+        "detailed": "Usuario no encontrado"
     }
